@@ -1,4 +1,4 @@
-function [dets, boxes, isfound]= rundpm(im,model,cls)
+function [dets, boxes, isfound]= rundpm(im,model,cls,show)
 	dpm = tic();
 
 	if nargin < 2
@@ -34,9 +34,12 @@ function [dets, boxes, isfound]= rundpm(im,model,cls)
 	dpm = toc(dpm);
     fprintf('detect time %f\n',dpm);
 	if ~isempty(top)
-		axis equal; 
-		axis on;
-		clf;
+
+		if show == 1
+			axis equal; 
+			axis on;
+			clf;
+		end
 		%showboxes(im, reduceboxes(model, boxes(top,:)));
 		disp('detections');
 
@@ -44,8 +47,15 @@ function [dets, boxes, isfound]= rundpm(im,model,cls)
 		bbox = bboxpred_get(model.bboxpred, dets, reduceboxes(model, boxes));
 		bbox = clipboxes(im, bbox);
 		top = nms(bbox, 0.5);
+
+
 		%clf;
-		showboxes(im, bbox(top,:));
+		if show == 1
+			showboxes(im, bbox(top,:));
+		end
+
+		dets = bbox(top,:);
+
 		disp('bounding boxes');
 		isfound = 1;
 	else
