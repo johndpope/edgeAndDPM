@@ -1,4 +1,4 @@
-function [newim,sc] = resize2small(im,sc)
+function [newim,sc] = resizebbox(im,sc)
 
 	if nargin < 2
 		w = size(im,2);

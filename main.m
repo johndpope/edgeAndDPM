@@ -55,7 +55,7 @@ function main(I,pauseflag,triansize)
         meas(i,4) = (y2-y1)/2+y1;
 
         im = I(y1:y2,x1:x2,:);
-        im = resize2small(im);
+        [im,sc] = resize2small(im);  %大小缩放
         [dets, boxes,flag ]= rundpm(im,model,cls,0);
         species(i);
         % if flag == 1
@@ -80,7 +80,7 @@ function main(I,pauseflag,triansize)
         y1 = int32(candidates(i,2));
         y2 = int32(candidates(i,4));
         im = I(y1:y2,x1:x2,:);
-        im = resize2small(im);
+        [im,sc] = resize2small(im);
         [dets, boxes,flag] = rundpm(im,model,cls,0);
         % if flag == 1
         %     break;
