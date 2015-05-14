@@ -1,4 +1,4 @@
-function [dets, boxes, isfound]= rundpm(im,model,cls,show)
+function [dets, isfound]= frundpm(im,model,cls,show)
 	dpm = tic();
 
 	if nargin < 2
@@ -36,7 +36,7 @@ function [dets, boxes, isfound]= rundpm(im,model,cls,show)
 	if ~isempty(top)
 
 		if show == 1
-			axis equal; 
+			axis equal;
 			axis on;
 			clf;
 		end

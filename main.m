@@ -1,7 +1,7 @@
 function main(I,pauseflag,triansize)
 
     if nargin < 1
-        I = imread('000084.jpg');
+        I = imread('images/000084.jpg');
     end
 
     if nargin < 2
@@ -40,6 +40,8 @@ function main(I,pauseflag,triansize)
     model=model.model;
     cls = model.class;
 
+
+    % 200 proposals to train
     meas = zeros(triansize,4);
     species = zeros(triansize,1);
     for i = 1:triansize
@@ -56,21 +58,26 @@ function main(I,pauseflag,triansize)
 
         im = I(y1:y2,x1:x2,:);
         [im,sc] = resize2small(im);  %大小缩放
-        [dets, boxes,flag ]= rundpm(im,model,cls,0);
-        species(i);
+        [dets,flag]= rundpm(im,model,cls,1);
+        
+        %species(i);
         % if flag == 1
         %     break;
         % end;
 
 
-        if(flag == 1 && pauseflag == 1)
+        if flag == 1
+            objectArea = (dets(1,3)-dets(1,1))*(dets(1,4)-dets(1,2));
+            proposalArea =  size(im,2)*size(im,1);
+
+            fprintf('oA = %.2f  oP = %.2f   pcent = %.2f  score = %f ',objectArea,proposalArea, objectArea/proposalArea,dets(1,5));
             pause;
         end;
     end
-    ObjBayes = NaiveBayes.fit(meas, species);
-    pre0 = ObjBayes.predict(meas);  
-    [CLMat, order] = confusionmat(species, pre0);
-    [[{'From/To'},order'];order, num2cell(CLMat)]
+    % ObjBayes = NaiveBayes.fit(meas, species);
+    % pre0 = ObjBayes.predict(meas);  
+    % [CLMat, order] = confusionmat(species, pre0);
+    % [[{'From/To'},order'];order, num2cell(CLMat)]
 
     pause;
     for i = triansize:length(candidates)
@@ -81,7 +88,7 @@ function main(I,pauseflag,triansize)
         y2 = int32(candidates(i,4));
         im = I(y1:y2,x1:x2,:);
         [im,sc] = resize2small(im);
-        [dets, boxes,flag] = rundpm(im,model,cls,0);
+        [dets,flag] = rundpm(im,model,cls,0);
         % if flag == 1
         %     break;
         % end;

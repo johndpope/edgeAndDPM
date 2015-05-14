@@ -4,6 +4,6 @@ function easy_use_dpm(im)
     model=model.model;
     cls = model.class;
 
-    [dets, boxes,flag ]= rundpm(im,model,cls,1);
+    [dets,flag ]= rundpm(im,model,cls,1);
 
 end
