@@ -1,8 +1,10 @@
-function  [radius,circleCenter] = minCircle(xx)
+function  [radius,circleCenter] = minCircle(xx,im)
 
 %xx=[-1.2 3;0 0;0 1;0 2;0 3;0 4;0 5;1 -1.5;1 0;1 1;1 2;1 3;1 4;1 5;2 0;2 1;2 2;2 3;2 4;2 5;3 0;3 1;3 2;3 3;3 4;3 5;4 0;4 1;4 2;4 3;4 4;4 5;5 0;5 1;5 2;5 3;5 4;5 5;2.5 3;];
 
-
+    if nargin>1
+        image(im);hold on;
+    end
     z=xx(:,1);
     %我方的
     y=xx(:,2);
@@ -135,102 +137,101 @@ function  [radius,circleCenter] = minCircle(xx)
 
     if r(mc)-R(3)<=0.000001%没有点在圆外，结束回家吃饭去
 
-%         alpha=0:pi/20:2*pi;%角度[0,2*pi]
-% 
-%         plot(R(1)+R(3)*cos(alpha),R(2)+R(3)*sin(alpha),'--r');%中心点在（R(1),R(2)）半径为R(3)的圆
-% 
-%         axis equal;
+        alpha=0:pi/20:2*pi;%角度[0,2*pi]
+        % 
+        circleCenter = R(1,1:2);
+        radius = R(3)
 
-        % break;所有点都被圆覆盖       
+        plot(R(1,1)+R(1,3)*cos(alpha),R(1,2)+R(1,3)*sin(alpha),'--r');%中心点在（rSet(i,1),rSet(i,2)）半径为rSet(i,3)的圆     
 
     else
 
        %距离圆心最远的点在圆外       
 
     end;
-
+    r(mc)-R(3)
     if r(mc)-R(3)>0.000001
     
-    D=[z(mc),y(mc)];
+        D=[z(mc),y(mc)];
 
-    P=[A;B;C;D];%保存这四个点的坐标
+        P=[A;B;C;D];%保存这四个点的坐标
 
-     
+         
 
-    DI=mc;
+        DI=mc;
 
-    set_3P=nchoosek([finalpoints(1),finalpoints(2),finalpoints(3),DI],3);
+        set_3P=nchoosek([finalpoints(1),finalpoints(2),finalpoints(3),DI],3);
 
-    rSet=[];
+        rSet=[];
 
-    for i=1:length(set_3P)
+        for i=1:length(set_3P)
 
-        A=[z(set_3P(i,1)) y(set_3P(i,1))];
+            A=[z(set_3P(i,1)) y(set_3P(i,1))];
 
-        B=[z(set_3P(i,2)) y(set_3P(i,2))];
+            B=[z(set_3P(i,2)) y(set_3P(i,2))];
 
-        C=[z(set_3P(i,3)) y(set_3P(i,3))];
+            C=[z(set_3P(i,3)) y(set_3P(i,3))];
 
-      
+          
 
-        R=minCirclePoints3(A,B,C);
-%         alpha=0:pi/20:2*pi;%角度[0,2*pi]
-%  
-%         plot(R(1)+R(3)*cos(alpha),R(2)+R(3)*sin(alpha),'--r');%中心点在（R(1),R(2)）半径为R(3)的圆
-% 
-%          axis equal;
+            R=minCirclePoints3(A,B,C);
+        %         alpha=0:pi/20:2*pi;%角度[0,2*pi]
+        %  
+        %         plot(R(1)+R(3)*cos(alpha),R(2)+R(3)*sin(alpha),'--r');%中心点在（R(1),R(2)）半径为R(3)的圆
+        % 
+        %          axis equal;
 
 
-        rSet=[rSet;[R,i]];%每行：圆心坐标,半径,第几组(每组包括随机的三个点)
-
-    end;
-
-    rSet=sortrows(rSet,3);%按照半径排序
-
-    
-
-%   在四个圆中找一个最小半径圆包含这四个点
-   
-    for i=1:1:size(rSet,1)
-        k=1;
-        for j=1:1:4
-
-          if sqrt((rSet(i,1)-(P(j,1) ))^2+ ( rSet(i,2)-(P(j,2)))^2) -rSet(i,3)>0.00001%这个圆不行
-
-            break;  
-          else 
-              k=k+1;
-          end
+            rSet=[rSet;[R,i]];%每行：圆心坐标,半径,第几组(每组包括随机的三个点)
 
         end;
 
-        if k>4%第i组三个点产生的圆可行--必然可以找到一个
+        rSet=sortrows(rSet,3);%按照半径排序
 
-            break;
+
+
+        %   在四个圆中找一个最小半径圆包含这四个点
+
+        for i=1:1:size(rSet,1)
+            k=1;
+            for j=1:1:4
+
+              if sqrt((rSet(i,1)-(P(j,1) ))^2+ ( rSet(i,2)-(P(j,2)))^2) -rSet(i,3)>0.00001%这个圆不行
+
+                break;  
+              else 
+                  k=k+1;
+              end
+
+            end;
+
+            if k>4%第i组三个点产生的圆可行--必然可以找到一个
+
+                break;
+
+            end;
 
         end;
 
+        mc=rSet(i,4);
+
+        A=[z(set_3P(mc,1)) y(set_3P(mc,1))];
+
+        B=[z(set_3P(mc,2)) y(set_3P(mc,2))];
+
+        C=[z(set_3P(mc,3)) y(set_3P(mc,3))];
+
+        alpha=0:pi/20:2*pi;%角度[0,2*pi]
+        % 
+        circleCenter = [rSet(i,1),rSet(i,2)];
+        radius = rSet(i,3);
+
+        plot(rSet(i,1)+rSet(i,3)*cos(alpha),rSet(i,2)+rSet(i,3)*sin(alpha),'--r');%中心点在（rSet(i,1),rSet(i,2)）半径为rSet(i,3)的圆
+        % 
+        %     axis equal;
+        %     
     end;
-
-    
-
-    mc=rSet(i,4);
-
-    A=[z(set_3P(mc,1)) y(set_3P(mc,1))];
-
-    B=[z(set_3P(mc,2)) y(set_3P(mc,2))];
-
-    C=[z(set_3P(mc,3)) y(set_3P(mc,3))];
-    
-    alpha=0:pi/20:2*pi;%角度[0,2*pi]
-% 
-    circleCenter = [rSet(i,1),rSet(i,2)];
-    radius = rSet(i,3);
-
-    plot(rSet(i,1)+rSet(i,3)*cos(alpha),rSet(i,2)+rSet(i,3)*sin(alpha),'--r');%中心点在（rSet(i,1),rSet(i,2)）半径为rSet(i,3)的圆
-% 
-%     axis equal;
-%     
 end;
+
 
 
