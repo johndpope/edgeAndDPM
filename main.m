@@ -21,6 +21,8 @@ function main(I,pauseflag,triansize)
 
 
     th = tic;
+    allselectWin = [];
+    allselectWinScores = [];
     [candidates,score] = run_edge_boxes50(I,1000);
     tx = toc(th);
     fprintf('run_edge_boxes50 time is %f\n',tx);
@@ -44,7 +46,8 @@ function main(I,pauseflag,triansize)
     % 200 proposals to train
     meas = zeros(triansize,4);
     species = zeros(triansize,1);
-    for i = 1:triansize
+    windowsCenters = [];
+    for i = 1:1%triansize %1
         fprintf('%d',i);
         x1 = int32(candidates(i,1));
         x2 = int32(candidates(i,3));
@@ -71,31 +74,73 @@ function main(I,pauseflag,triansize)
             proposalArea =  size(im,2)*size(im,1);
 
             fprintf('oA = %.2f  oP = %.2f   pcent = %.2f  score = %f ',objectArea,proposalArea, objectArea/proposalArea,dets(1,5));
-            pause;
+            
+            windowsCenters = [ windowsCenters ; x1+size(im,2)/2/sc  ,y1+size(im,1)/2/sc]
+            if objectArea/proposalArea > 0.5
+                dets
+                allselectWin = [allselectWin;x1 y1 x1+size(im,2)/sc y1+size(im,1)/sc  dets(1,5)];
+                allselectWinScores = [allselectWinScores;dets(1,5)];
+            %pause;
+            end;
         end;
-    end
+    end;
+
+    windowsCenters = [       311         171;
+                             306         206;
+                             296         200;
+                             305         179;
+                             296         191;
+                             303         191;
+                             ];
+
+
+    [radius,CirCen] = minCircle(double(windowsCenters),I);
+
     % ObjBayes = NaiveBayes.fit(meas, species);
     % pre0 = ObjBayes.predict(meas);  
     % [CLMat, order] = confusionmat(species, pre0);
     % [[{'From/To'},order'];order, num2cell(CLMat)]
 
-    pause;
+    %pause;
+    counter = 1;
     for i = triansize:length(candidates)
-        fprintf('%d',i);
+
         x1 = int32(candidates(i,1));
         x2 = int32(candidates(i,3));
         y1 = int32(candidates(i,2));
         y2 = int32(candidates(i,4));
-        im = I(y1:y2,x1:x2,:);
-        [im,sc] = resize2small(im);
-        [dets,flag] = rundpm(im,model,cls,0);
-        % if flag == 1
-        %     break;
-        % end;
 
-        if flag == 1
-            pause;
+        center2circle = (((x2-x1)/2+x1) - CirCen(1))*((x2-x1)/2+x1 - CirCen(1)) + ((y2-y1)/2+y1- CirCen(2))*((y2-y1)/2+y1- CirCen(2));
+        if center2circle < radius*radius
+            fprintf('NO.%d  counter =  %d ',i,counter);
+            counter = counter + 1;
+            im = I(y1:y2,x1:x2,:);
+            [im,sc] = resize2small(im);
+            [dets,flag] = rundpm(im,model,cls,0);
+            % if flag == 1
+            %     break;
+            % end;
+
+            if flag == 1
+                dets
+                allselectWin = [allselectWin;x1 y1 x1+size(im,2)/sc y1+size(im,1)/sc  dets(1,5)];
+                allselectWinScores = [allselectWinScores;dets(1,5)];
+            end
         end;
+    end
+
+
+    axis equal;
+    axis on;
+    clf;
+    showboxes(I,allselectWin);
+
+    allselectWin
+    allselectWinScores
+    allselectWin = double(allselectWin);
+    for i = 1:size(allselectWinScores,1)
+        ss = sprintf('%.2f',allselectWinScores(i,1));
+        text(allselectWin(i,1),allselectWin(i,2),ss);
     end
     tx = toc(th);
     fprintf('total time is %f\n',tx);
