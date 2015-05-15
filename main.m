@@ -1,7 +1,7 @@
-function main(I,pauseflag,triansize)
-
+%function main(I,pauseflag,triansize)
+    nargin = 0;
     if nargin < 1
-        I = imread('images/000084.jpg');
+        I = imread('images/000399.jpg');
     end
 
     if nargin < 2
@@ -47,7 +47,7 @@ function main(I,pauseflag,triansize)
     meas = zeros(triansize,4);
     species = zeros(triansize,1);
     windowsCenters = [];
-    for i = 1:1%triansize %1
+    for i = 1:triansize %1
         fprintf('%d',i);
         x1 = int32(candidates(i,1));
         x2 = int32(candidates(i,3));
@@ -85,13 +85,13 @@ function main(I,pauseflag,triansize)
         end;
     end;
 
-    windowsCenters = [       311         171;
-                             306         206;
-                             296         200;
-                             305         179;
-                             296         191;
-                             303         191;
-                             ];
+    % windowsCenters = [       311         171;
+    %                          306         206;
+    %                          296         200;
+    %                          305         179;
+    %                          296         191;
+    %                          303         191;
+    %                          ];
 
 
     [radius,CirCen] = minCircle(double(windowsCenters),I);
@@ -101,7 +101,7 @@ function main(I,pauseflag,triansize)
     % [CLMat, order] = confusionmat(species, pre0);
     % [[{'From/To'},order'];order, num2cell(CLMat)]
 
-    %pause;
+    pause;
     counter = 1;
     for i = triansize:length(candidates)
 
@@ -123,7 +123,7 @@ function main(I,pauseflag,triansize)
 
             if flag == 1
                 dets
-                allselectWin = [allselectWin;x1 y1 x1+size(im,2)/sc y1+size(im,1)/sc  dets(1,5)];
+                allselectWin = [allselectWin;x1 y1 x1+size(im,2)/sc y1+size(im,1)/sc  1.0*dets(1,5)];
                 allselectWinScores = [allselectWinScores;dets(1,5)];
             end
         end;
@@ -133,14 +133,15 @@ function main(I,pauseflag,triansize)
     axis equal;
     axis on;
     clf;
-    showboxes(I,allselectWin);
+    myshowboxes(allselectWin(1,:),[1 0 0],I);
 
     allselectWin
     allselectWinScores
     allselectWin = double(allselectWin);
     for i = 1:size(allselectWinScores,1)
+        myshowboxes(allselectWin(1,:),[1/i 1/i 100/255]);
         ss = sprintf('%.2f',allselectWinScores(i,1));
-        text(allselectWin(i,1),allselectWin(i,2),ss);
+        text(allselectWin(i,1),allselectWin(i,2),ss,'color',[1/i 1/i 100/255]);
     end
     tx = toc(th);
     fprintf('total time is %f\n',tx);
@@ -150,4 +151,4 @@ function main(I,pauseflag,triansize)
         path(old_path);
     end
 
-end
+%end

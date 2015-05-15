@@ -6,7 +6,6 @@ function  [radius,circleCenter] = minCircle(xx,im)
         image(im);hold on;
     end
     z=xx(:,1);
-    %ÎÒ·½µÄ
     y=xx(:,2);
 
     plot(z,y,'*');hold on;

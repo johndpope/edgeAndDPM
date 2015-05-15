@@ -8,7 +8,7 @@ function [dets, isfound]= frundpm(im,model,cls,show)
 	end
 
 
-	thresh = -1.0;
+	thresh = -0.5;
 	pca = 5;
 	orig_model = model;
 	csc_model = cascade_model(model,'2007', pca, thresh);
