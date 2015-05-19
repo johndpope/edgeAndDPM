@@ -1,7 +1,7 @@
 %function main(I,pauseflag,triansize)
     nargin = 0;
     if nargin < 1
-        I = imread('../VOCdevkit/VOC2007/JPEGImages/005232.jpg');
+        I = imread('../VOCdevkit/VOC2007/JPEGImages/004395.jpg');
     end
 
     if nargin < 2
@@ -21,27 +21,19 @@
 
 
     th = tic;
-    allselectWin = [];
-    allselectWinScores = [];
+
     [candidates,score] = run_edge_boxes50(I,1000);
     tx = toc(th);
     fprintf('run_edge_boxes50 time is %f\n',tx);
 
-    room = 0;
-    maxroom = 0;
-    maxindex = 0;
-    % for i = 1:length(candidates)
-    % 	room = (candidates(i,3)-candidates(i,1))*(candidates(i,4)-candidates(i,2));
-    %     if maxroom < room
-    %     	maxroom = room;
-    %     	maxindex = i;
-    %     end;
-    % end;
 
     model = load('../voc-release4.01/VOC2007/bicycle_final');
     model=model.model;
     cls = model.class;
 
+    allselectWin = [];
+    allselectWinScores = [];
+    allselectWinArea = [];
 
     % 200 proposals to train
     meas = zeros(triansize,4);
@@ -54,10 +46,10 @@
         y1 = int32(candidates(i,2));
         y2 = int32(candidates(i,4));
 
-        meas(i,1) = (y2-y1)/(x2-x1);
-        meas(i,2) = (y2-y1)*(x2-x1);
-        meas(i,3) = (x2-x1)/2+x1;
-        meas(i,4) = (y2-y1)/2+y1;
+        % meas(i,1) = (y2-y1)/(x2-x1);
+        % meas(i,2) = (y2-y1)*(x2-x1);
+        % meas(i,3) = (x2-x1)/2+x1;
+        % meas(i,4) = (y2-y1)/2+y1;
 
         im = I(y1:y2,x1:x2,:);
         [im,sc] = resize2small(im);  %大小缩放
@@ -77,6 +69,7 @@
             
             windowsCenters = [ windowsCenters ; x1+size(im,2)/2/sc  ,y1+size(im,1)/2/sc]
             if objectArea/proposalArea > 0.5
+                allselectWinArea = [allselectWinArea; (y2-y1)*(x2-x1)];
                 dets
                 allselectWin = [allselectWin;x1 y1 x1+size(im,2)/sc y1+size(im,1)/sc  dets(1,5)];
                 allselectWinScores = [allselectWinScores;dets(1,5)];
@@ -95,6 +88,12 @@
 
 
     [radius,CirCen] = minCircle(double(windowsCenters),I);
+    meanArea = mean(allselectWinArea);
+    maxArea = max(allselectWinScores);
+    minArea = min(allselectWinScores);
+
+    fprintf('min %f %f  max %f %f',minArea,meanArea*0.8,maxArea,meanArea*1.5)
+
 
     % ObjBayes = NaiveBayes.fit(meas, species);
     % pre0 = ObjBayes.predict(meas);  
@@ -111,20 +110,23 @@
         y2 = int32(candidates(i,4));
 
         center2circle = (((x2-x1)/2+x1) - CirCen(1))*((x2-x1)/2+x1 - CirCen(1)) + ((y2-y1)/2+y1- CirCen(2))*((y2-y1)/2+y1- CirCen(2));
+        thisArea = (y2-y1)*(x2-x1);
         if center2circle < radius*radius
-            fprintf('NO.%d  counter =  %d ',i,counter);
-            counter = counter + 1;
-            im = I(y1:y2,x1:x2,:);
-            [im,sc] = resize2small(im);
-            [dets,flag] = rundpm(im,model,cls,0);
-            % if flag == 1
-            %     break;
-            % end;
+            if(thisArea > meanArea*0.7 && thisArea < meanArea*1.5 )
+                fprintf('NO.%d  counter =  %d ',i,counter);
+                counter = counter + 1;
+                im = I(y1:y2,x1:x2,:);
+                [im,sc] = resize2small(im);
+                [dets,flag] = rundpm(im,model,cls,0);
+                % if flag == 1
+                %     break;
+                % end;
 
-            if flag == 1
-                dets
-                allselectWin = [allselectWin;x1 y1 x1+size(im,2)/sc y1+size(im,1)/sc  1.0*dets(1,5)];
-                allselectWinScores = [allselectWinScores;dets(1,5)];
+                if flag == 1
+                    dets
+                    allselectWin = [allselectWin;x1 y1 x1+size(im,2)/sc y1+size(im,1)/sc  1.0*dets(1,5)];
+                    allselectWinScores = [allselectWinScores;dets(1,5)];
+                end
             end
         end;
     end
@@ -143,6 +145,8 @@
         ss = sprintf('%.2f',allselectWinScores(i,1));
         text(allselectWin(i,1),allselectWin(i,2),ss,'color',[1/i 1/i 100/255]);
     end
+    [maxbox,maxid] = max(allselectWinScores);
+    myshowboxes(allselectWin(maxid,:),[0 0 1]);
     tx = toc(th);
     fprintf('total time is %f\n',tx);
 
