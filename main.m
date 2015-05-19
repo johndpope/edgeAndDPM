@@ -1,7 +1,7 @@
 %function main(I,pauseflag,triansize)
     nargin = 0;
     if nargin < 1
-        I = imread('images/000399.jpg');
+        I = imread('../VOCdevkit/VOC2007/JPEGImages/005232.jpg');
     end
 
     if nargin < 2
@@ -139,7 +139,7 @@
     allselectWinScores
     allselectWin = double(allselectWin);
     for i = 1:size(allselectWinScores,1)
-        myshowboxes(allselectWin(1,:),[1/i 1/i 100/255]);
+        myshowboxes(allselectWin(i,:),[1/i 1/i 100/255]);
         ss = sprintf('%.2f',allselectWinScores(i,1));
         text(allselectWin(i,1),allselectWin(i,2),ss,'color',[1/i 1/i 100/255]);
     end
