@@ -18,6 +18,8 @@ function  [radius,circleCenter] = minCircle(xx,im)
         a=(z(1)+z(2))/2;
         b=(y(1)+y(2))/2;
         R=[a b r]
+        circleCenter = R(1,1:2);
+        radius = R(3);
     %     alpha=0:pi/20:2*pi;%角度[0,2*pi]
     %     plot(a+r*cos(alpha),b+r*sin(alpha),'--r');%中心点在（a,b）半径为r的圆
     %     axis equal;
@@ -139,7 +141,7 @@ function  [radius,circleCenter] = minCircle(xx,im)
         alpha=0:pi/20:2*pi;%角度[0,2*pi]
         % 
         circleCenter = R(1,1:2);
-        radius = R(3)
+        radius = R(3);
 
         plot(R(1,1)+R(1,3)*cos(alpha),R(1,2)+R(1,3)*sin(alpha),'--r');%中心点在（rSet(i,1),rSet(i,2)）半径为rSet(i,3)的圆     
 

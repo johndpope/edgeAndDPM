@@ -1,23 +1,7 @@
-%function main(I,pauseflag,triansize)
-    nargin = 0;
-    if nargin < 1
-        I = imread('../VOCdevkit/VOC2007/JPEGImages/000399.jpg');
-    end
+function nothingflag = InteractiveDector(I,model,cls,triansize)
 
-    if nargin < 2
-        pauseflag = 1;
-    end
-
-    if nargin < 3
-        triansize = 200;
-    end
-
-    if ~isdeployed
-        old_path = path;
-
-        addpath(genpath('../voc-release4.01'));
-        disp('dpm voc addpath size');
-    end
+%use DPM and edgebox
+%pascal voc
 
 
     th = tic;
@@ -25,11 +9,6 @@
     [candidates,score] = run_edge_boxes50(I,1000);
     tx = toc(th);
     fprintf('run_edge_boxes50 time is %f\n',tx);
-
-
-    model = load('../voc-release4.01/VOC2007/bicycle_final');
-    model=model.model;
-    cls = model.class;
 
     allselectWin = [];
     allselectWinScores = [];
@@ -39,16 +18,18 @@
     meas = zeros(triansize,4);
     species = zeros(triansize,1);
     windowsCenters = [];
+
     startT = 1;
     endT = 0;
     nothingflag = 0;
-    while(size(allselectWin,1) < 3)
+    while(size(windowsCenters,1) < 3)
         endT = triansize + endT;
-        if(endT > 3*triansize)
+        if(endT > 2*triansize)
             nothingflag = 1;
             break;
         end
         for i = startT:endT %1
+
             fprintf('%d',i);
             x1 = int32(candidates(i,1));
             x2 = int32(candidates(i,3));
@@ -82,29 +63,14 @@
         fprintf('nothing\n');
         return;
     end
-    % windowsCenters = [       311         171;
-    %                          306         206;
-    %                          296         200;
-    %                          305         179;
-    %                          296         191;
-    %                          303         191;
-    %                          ];
-
 
     [radius,CirCen] = minCircle(double(windowsCenters),I);
     meanArea = mean(allselectWinArea);
     maxArea = max(allselectWinArea);
     minArea = min(allselectWinArea);
 
-    fprintf('min %f %f  max %f %f',minArea,meanArea*0.8,maxArea,meanArea*1.5)
+    fprintf('min %f %f  max %f %f\n',minArea,meanArea*0.8,maxArea,meanArea*1.5);
 
-
-    % ObjBayes = NaiveBayes.fit(meas, species);
-    % pre0 = ObjBayes.predict(meas);  
-    % [CLMat, order] = confusionmat(species, pre0);
-    % [[{'From/To'},order'];order, num2cell(CLMat)]
-
-    pause;
     counter = 1;
     for i = endT:length(candidates)
 
@@ -117,14 +83,11 @@
         thisArea = (y2-y1)*(x2-x1);
         if center2circle < radius*radius
             if(thisArea > meanArea*0.7 && thisArea < meanArea*1.5 )
-                fprintf('NO.%d  counter =  %d ',i,counter);
+                fprintf('NO.%d  counter =  %d \n',i,counter);
                 counter = counter + 1;
                 im = I(y1:y2,x1:x2,:);
                 [im,sc] = resize2small(im);
                 [dets,flag] = rundpm(im,model,cls,0);
-                % if flag == 1
-                %     break;
-                % end;
 
                 if flag == 1
                     dets
@@ -133,30 +96,21 @@
                 end
             end
         end;
-    end
-
+    end;
 
     axis equal;
     axis on;
     clf;
     myshowboxes(allselectWin(1,:),[1 0 0],I);
 
-    allselectWin
-    allselectWinScores
     allselectWin = double(allselectWin);
-    for i = 1:size(allselectWinScores,1)
-        myshowboxes(allselectWin(i,:),[1/i 1/i 100/255]);
-        ss = sprintf('%.2f',allselectWinScores(i,1));
-        text(allselectWin(i,1),allselectWin(i,2),ss,'color',[1/i 1/i 100/255]);
-    end
+    % for i = 1:size(allselectWinScores,1)
+    %     myshowboxes(allselectWin(i,:),[1/i 1/i 100/255]);
+    %     ss = sprintf('%.2f',allselectWinScores(i,1));
+    %     text(allselectWin(i,1),allselectWin(i,2),ss,'color',[1/i 1/i 100/255]);
+    % end
     [maxbox,maxid] = max(allselectWinScores);
     myshowboxes(allselectWin(maxid,:),[0 1 0]);
     tx = toc(th);
     fprintf('total time is %f\n',tx);
-
-
-    if ~isdeployed
-        path(old_path);
-    end
-
-%end
+end
