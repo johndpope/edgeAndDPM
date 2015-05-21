@@ -22,7 +22,6 @@ function nothingflag = justDPM(I,model,cls,triansize)
         y1 = int32(candidates(i,2));
         y2 = int32(candidates(i,4));
 
-
         counter = counter + 1;
         im = I(y1:y2,x1:x2,:);
         [im,sc] = resize2small(im);
@@ -34,7 +33,9 @@ function nothingflag = justDPM(I,model,cls,triansize)
             nothingflag = 0;
         end;
     end;
-
+    if nothingflag == 1
+        return;
+    end
     axis equal;
     axis on;
     clf;
