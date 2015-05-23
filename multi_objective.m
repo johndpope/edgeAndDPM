@@ -4,39 +4,26 @@ function multi_objective()
  %    model = load('../voc-release4.01/VOC2007/bicycle_final');
  %    model=model.model;
  %    cls = model.class;
-    bilis = [];
- %    %fout = fopen('test/out.','wt');
-	% for i = 1:size(bicycle_test,1)
-	% 	if bicycle_test(i,2) == 1
-	% 		s = num2string(bicycle_test(i,1));
-	% 		imageName = sprintf('../VOCdevkit/VOC2007/JPEGImages/%s.jpg',s);
-	% 		annotation = sprintf('../VOCdevkit/VOC2007/Annotations/%s.xml',s);
-	% 		% im = imread(imageName);
-	% 		[bboxes , n] = readObjectBoxesFromXML(annotation,'bicycle');
-	% 		%nothing = InteractiveDector(im,model,cls,200);
-	% 		if n>1
-	% 			% myshowboxes(bboxes,[1,0,1],im);
-	% 			% text(0,-10,s);
-	% 			% saveas(gcf,sprintf('multiObj/%s_X.jpg',s));
+    dttimes = [];
 
-	% 			%查看数据分布
-	% 			area1 = (bboxes(1,3)-bboxes(1,1)) * (bboxes(1,4) - bboxes(1,2));
-	% 			area2 = (bboxes(2,3)-bboxes(2,1)) * (bboxes(2,4) - bboxes(2,2));
-	% 			bili = area2/area1;
-	% 			if(bili > 1)
-	% 				bili = 1/bili;
-	% 			end;
-	% 			bilis = [bilis;bili];
-	% 		end
-	% 	end
-	% end
-	% save mydata1 bilis;
+	for i = 1:size(bicycle_test,1)
+		if bicycle_test(i,2) == 1
+			s = num2string(bicycle_test(i,1));
+			imageName = sprintf('../VOCdevkit/VOC2007/JPEGImages/%s.jpg',s);
+			annotation = sprintf('../VOCdevkit/VOC2007/Annotations/%s.xml',s);
+
+			[bboxes , n] = readObjectBoxesFromXML(annotation,'bicycle');
+
+			if n>1
+				im = imread(imageName);
+				detecttimes = InteractiveSimDector(im,bboxes);
+				dttimes = [dttimes; detecttimes];
+			end
+		end
+	end
+	save dttimesNoChange dttimes;
 
 	load '../VOCdevkit/VOC2011/ImageSets/Main/bicycle_trainval1.txt';
-
-    %fout = fopen('test/out.','wt');
-
-
 
 	for i = 1:size(bicycle_trainval1,1)
 		if bicycle_trainval1(i,3) == 1
@@ -45,26 +32,32 @@ function multi_objective()
 			annotation = sprintf('../VOCdevkit/VOC2011/Annotations/%d_%s.xml',bicycle_trainval1(i,1),s);
 			% im = imread(imageName);
 			[bboxes , n] = readObjectBoxesFromXML(annotation,'bicycle');
-			fprintf('NO. %d \n', i);
-			%nothing = InteractiveDector(im,model,cls,200);
-			if n>1
-				% myshowboxes(bboxes,[1,0,1],im);
-				% text(0,-10,s);
-				% saveas(gcf,sprintf('multiObj2011/%d_%s_x.jpg',bicycle_trainval1(i,1),s));
 
-				%查看数据分布
-				area1 = (bboxes(1,3)-bboxes(1,1)) * (bboxes(1,4) - bboxes(1,2));
-				area2 = (bboxes(2,3)-bboxes(2,1)) * (bboxes(2,4) - bboxes(2,2));
-				bili = area2/area1;
-				if(bili > 1)
-					bili = 1/bili;
-				end;
-				bilis = [bilis;bili];
+			if n>1
+				im = imread(imageName);
+				detecttimes = InteractiveSimDector(im,bboxes);
+				dttimes = [dttimes; detecttimes];
 			end
 		end
 	end
-	save mydata2 bilis;
-	drawbilis(bilis);
+
+	save dttimesChange1 dttimes;
+	x = dttimes;
+	load dttimesNoChange1;
+	sum(dttimes)
+	sum(x)
+	ssss = 0;
+	tttt = 0;
+	for i = 1:size(x,1)
+		if x(i,1) < dttimes(i,1)
+			ssss = ssss+1;
+		elseif x(i,1) > dttimes(i,1)
+			tttt = tttt+1;
+		end
+	end
+	ssss
+	tttt
+			
 end
 
 function news = num2string(n)

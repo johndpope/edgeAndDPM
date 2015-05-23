@@ -20,7 +20,7 @@ function [candidates, score] = run_edge_boxes50(im, num_candidates)
   opts.maxBoxes = 1e4;  % max number of boxes to detect
 
   %% detect bbs (no visualization code for now)
-  tic, bbs=edgeBoxes(im,model,opts); toc
+  bbs=edgeBoxes(im,model,opts);
   candidates = double(bbs(:,1:4));
   candidates(:,3:4) = candidates(:,3:4) + candidates(:,1:2);
   score = double(bbs(:,end));
