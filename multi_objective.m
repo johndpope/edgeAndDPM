@@ -73,23 +73,4 @@ function news = num2string(n)
 	news = [c(1:6-length(b)) b];
 end
 
-function drawbilis(bilis)
-	dr = [];
-	for i = 1:10
-		counter = 0;
-		for j = 1:length(bilis)
-			if( bilis(j,1) > 1.0*(i-1)/10 &&  bilis(j,1) < 1.0*i/10 )
-				counter = counter + 1;
-			end
-		end
-		dr = [dr ; counter];
-	end
-	
-	b=bar(dr);
-	grid on;
-	ch = get(b,'children');
-	set(gca,'XTickLabel',{'0','0.1','0.2','0.3','0.4','0.5','0.6','0.7','0.8','0.9'});
 
-	xlabel('x axis ');
-	ylabel('y axis');
-end
