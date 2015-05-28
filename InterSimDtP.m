@@ -1,4 +1,4 @@
-function detecttimes = InteractiveSimDector(I,bboxes)
+function detecttimes = InterSimDtP(I,bboxes,pofenbu,beishu)
 
 	% th = tic;
 	detecttimes = 0;
@@ -28,7 +28,7 @@ function detecttimes = InteractiveSimDector(I,bboxes)
 	    end
 	    findfirstC = i;
 	end
-
+	detecttimes = findfirstC;
 	if findfirstC == size(candidates,1)
 		detecttimes = -1;
 		fprintf('gg smd -1\n');
@@ -42,66 +42,54 @@ function detecttimes = InteractiveSimDector(I,bboxes)
 	end
 
 
+
+
 	%使用条件
 	centerX = (candidates(findfirstC,1)+candidates(findfirstC,3))/2;
 	centerY = (candidates(findfirstC,2)+candidates(findfirstC,4))/2;
 
 	stArea = (candidates(findfirstC,1)-candidates(findfirstC,3)) * (candidates(findfirstC,2)-candidates(findfirstC,4));
 
-	for i = findfirstC+1:size(candidates,1)
-		thiscenterX = (candidates(i,1)+candidates(i,3))/2;
-		thiscenterY = (candidates(i,2)+candidates(i,4))/2;
+	remine = candidates(findfirstC+1:end,:);
+	score = score(findfirstC+1:end,1);
 
-		thisArea = (candidates(i,1)-candidates(i,3)) * (candidates(i,2)-candidates(i,4));
-
+	for i = 1:size(remine,1)
+		thiscenterX = (remine(i,1)+remine(i,3))/2;
+		thiscenterY = (remine(i,2)+remine(i,4))/2;
+		thisArea = (remine(i,1)-remine(i,3)) * (remine(i,2)-remine(i,4));
 		polar = polarDirection(centerX,centerY,thiscenterX,thiscenterY);
+		po = floor((polar+90)/10);
+		if po == 18 
+			po = 17;
+        end
+        if isnan(po)
+            l = 0;
+        end
+		score(i,1) = score(i,1) + beishu*pofenbu(po+1,1);
 
-		if(polar > -15 && polar < 15)
-			detflag(i,1) = 1;
-	    	for j = 1:size(bboxes,1)
-		    	[flag,alpha] = judgeArea(candidates(i,:),bboxes(j,:));
-		    	if flag == 1
-		    		if bestDtWindows(j,1) < alpha
-		    			bestDtWindows(j,1) = alpha;
-		    			bestDtWindows(j,2) = i;
-		    		end
-		    	end
-		    end
+	end
 
-			if length(find(bestDtWindows(:,1) == 0)) == 0
-		    	detecttimes = length(find(detflag == 1));
+	[score,idx] = sort(score(:,1),'descend');
+	remine = remine(idx,:);
 
-		    	fprintf('select succeed %d   \n', detecttimes);
-		    	return;
-		    end
-		end
+	for i = 1:size(remine,1)
+		detecttimes = detecttimes+1;
+    	for j = 1:size(bboxes,1)
+	    	[flag,alpha] = judgeArea(remine(i,:),bboxes(j,:));
+	    	if flag == 1
+	    		if bestDtWindows(j,1) < alpha
+	    			bestDtWindows(j,1) = alpha;
+	    			bestDtWindows(j,2) = i;
+	    		end
+	    	end
+	    end
+
+		if length(find(bestDtWindows(:,1) == 0)) == 0
+	    	fprintf('select succeed %d   \n', detecttimes);
+	    	return;
+	    end
 	end
 	fprintf('continue \n');
-
-	%继续原来的过程
-	for i = findfirstC+1:size(candidates,1)
-		% thiscenterX = (candidates(i,1)+candidates(i,3))/2;
-		% thiscenterY = (candidates(i,2)+candidates(i,4))/2;
-		% thisArea = (candidates(i,1)-candidates(i,3) * (candidates(i,2)-candidates(i,4));
-		% polar = polarDirection(centerX,centerY,thiscenterX,thiscenterY);
-
-		if(detflag(i,1) == 0)
-			detflag(i,1) = 1;
-	    	for j = 1:size(bboxes,1)
-		    	[flag,alpha] = judgeArea(candidates(i,:),bboxes(j,:));
-		    	if flag == 1
-		    		if bestDtWindows(j,1) < alpha
-		    			bestDtWindows(j,1) = alpha;
-		    			bestDtWindows(j,2) = i;
-		    		end
-		    	end
-		    end
-		    if length(find(bestDtWindows(:,1) == 0)) == 0
-		    	detecttimes = length(find(detflag == 1));
-		    	return;
-		    end
-		end
-	end
     if length(find(bestDtWindows(:,1) == 0)) > 0
     	detecttimes = -1;
     	return;
