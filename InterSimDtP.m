@@ -45,50 +45,71 @@ function detecttimes = InterSimDtP(I,bboxes,pofenbu,beishu)
 
 
 	%ä½¿ç”¨æ¡ä»¶
-	centerX = (candidates(findfirstC,1)+candidates(findfirstC,3))/2;
-	centerY = (candidates(findfirstC,2)+candidates(findfirstC,4))/2;
+	centerX = [(candidates(findfirstC,1)+candidates(findfirstC,3))/2];
+	centerY = [(candidates(findfirstC,2)+candidates(findfirstC,4))/2];
 
 	stArea = (candidates(findfirstC,1)-candidates(findfirstC,3)) * (candidates(findfirstC,2)-candidates(findfirstC,4));
 
 	remine = candidates(findfirstC+1:end,:);
 	score = score(findfirstC+1:end,1);
 
-	for i = 1:size(remine,1)
-		thiscenterX = (remine(i,1)+remine(i,3))/2;
-		thiscenterY = (remine(i,2)+remine(i,4))/2;
-		thisArea = (remine(i,1)-remine(i,3)) * (remine(i,2)-remine(i,4));
-		polar = polarDirection(centerX,centerY,thiscenterX,thiscenterY);
-		po = floor((polar+90)/10);
-		if po == 18 
-			po = 17;
-        end
-        if isnan(po)
-            l = 0;
-        end
-		score(i,1) = score(i,1) + beishu*pofenbu(po+1,1);
+	while(1)
+		Cscore = zeros(size(remine,1),1);  %Comprehensive score
 
+		for i = 1:size(remine,1)
+			thiscenterX = (remine(i,1)+remine(i,3))/2;
+			thiscenterY = (remine(i,2)+remine(i,4))/2;
+			thisArea = (remine(i,1)-remine(i,3)) * (remine(i,2)-remine(i,4));
+			ps = 0;
+			for j = 1:size(centerX,1)   %æ‰¾å‡ºå…¶ä¸­æœ?¤§çš?
+				polar = polarDirection(centerX(j,1),centerY(j,1),thiscenterX,thiscenterY);
+				po = floor((polar+90)/10);
+				if po == 18 
+					po = 17;
+		        end
+				hps = pofenbu(po+1,1);
+				if hps > ps
+					ps = hps;
+				end
+			end
+			%polar = polarDirection(centerX,centerY,thiscenterX,thiscenterY);
+			Cscore(i,1) = score(i,1) * ps;
+		end
+
+		[Cscore,idx] = sort(Cscore(:,1),'descend');
+		remine = remine(idx,:);
+		score  = score(idx,:);
+
+		for i = 1:size(remine,1)
+			findone = 0;
+			detecttimes = detecttimes+1;
+	    	for j = 1:size(bboxes,1)
+		    	[flag,alpha] = judgeArea(remine(i,:),bboxes(j,:));
+		    	if flag == 1
+		    		if bestDtWindows(j,1) < alpha
+		    			bestDtWindows(j,1) = alpha;
+		    			bestDtWindows(j,2) = i;
+		    		end
+
+		    		if length(find(bestDtWindows(:,1) == 0)) == 0
+		    			fprintf('select succeed %d   \n', detecttimes);
+		    			return;
+		   			end
+
+		   			findone = 1;
+		    	end
+		    end
+		    if findone == 1
+		    	remine = remine(i+1:end,:);
+				score = score(i+1:end,1);
+		    	break;
+		    end;
+		end
+		if i == size(remine,1) %æ£?µ‹å®Œäº†æ‰?œ‰çª—å£
+			break;
+		end
 	end
 
-	[score,idx] = sort(score(:,1),'descend');
-	remine = remine(idx,:);
-
-	for i = 1:size(remine,1)
-		detecttimes = detecttimes+1;
-    	for j = 1:size(bboxes,1)
-	    	[flag,alpha] = judgeArea(remine(i,:),bboxes(j,:));
-	    	if flag == 1
-	    		if bestDtWindows(j,1) < alpha
-	    			bestDtWindows(j,1) = alpha;
-	    			bestDtWindows(j,2) = i;
-	    		end
-	    	end
-	    end
-
-		if length(find(bestDtWindows(:,1) == 0)) == 0
-	    	fprintf('select succeed %d   \n', detecttimes);
-	    	return;
-	    end
-	end
 	fprintf('continue \n');
     if length(find(bestDtWindows(:,1) == 0)) > 0
     	detecttimes = -1;

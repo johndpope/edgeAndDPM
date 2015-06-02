@@ -1,12 +1,22 @@
-function drawbilis(bilis,n)
+function drawbilis(bilis,n,sb)
 	dr = [];
 	for i = 1:n
 		counter = 0;
 		if (n == 5 || n == 10)
 			for j = 1:length(bilis)
-				if( bilis(j,1) > 1.0*(i-1)/n &&  bilis(j,1) < 1.0*i/n )
-					counter = counter + 1;
+				if nargin < 2
+					sb = 1;
 				end
+				if sb == 1
+					if( bilis(j,1) > (1.0*(i-1)/n) &&  bilis(j,1) < 1.0*i/n )
+						counter = counter + 1;
+					end
+				else
+					if( bilis(j,1) > (1.0*(i-1)/n)*(1.0*(i-1)/n) &&  bilis(j,1) < 1.0*i/n*1.0*i/n )
+						counter = counter + 1;
+					end
+				end
+
 			end
 		else
 			for j = 1:length(bilis)

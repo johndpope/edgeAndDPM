@@ -1,5 +1,6 @@
 function iteratePascalVoc()
-	load '../VOCdevkit/VOC2007/ImageSets/Main/bicycle_test.txt';
+%	load '../VOCdevkit/VOC2007/ImageSets/Main/bicycle_test.txt';
+	load '../VOCdevkit/VOC2011/ImageSets/Main/bicycle_trainval1.txt';
 
 	model = load('../voc-release4.01/VOC2007/bicycle_final');
     model=model.model;
@@ -15,16 +16,16 @@ function iteratePascalVoc()
 			[bboxes , n] = readObjectBoxesFromXML(annotation,'bicycle');
 			%nothing = InteractiveDector(im,model,cls,200);
 			nothing = justDPM(im,model,cls,200);
-			if nothing == 0
-				myshowboxes(bboxes,[1,0,1]);
-				text(0,-10,s);
-				text(60,-10,'DPM succeed');
-			else
-				myshowboxes(bboxes,[1,0,1],im);
-				text(0,-10,s);
-				text(60,-10,'DPM error');
-			end
-			saveas(gcf,sprintf('test/%sX.jpg',s));
+				if nothing == 0
+					myshowboxes(bboxes,[1,0,1]);
+					text(0,-10,s);
+					text(60,-10,'DPM succeed');
+				else
+					myshowboxes(bboxes,[1,0,1],im);
+					text(0,-10,s);
+					text(60,-10,'DPM error');
+				end
+			%saveas(gcf,sprintf('test/%sX.jpg',s));
 			%pause;
 		end
 	end
